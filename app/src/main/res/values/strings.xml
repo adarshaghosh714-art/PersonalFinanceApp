@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FinanceApp2</string>
+    <string name="download_csv">Download CSV</string>
 </resources>
