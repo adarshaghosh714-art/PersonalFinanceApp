@@ -13,13 +13,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.financeapp2.personalfinance.AddTransactionActivity
+import com.example.financeapp2.personalfinance.LoginActivity
 import com.example.financeapp2.personalfinance.Transaction
 import com.example.financeapp2.personalfinance.TransactionAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import kotlin.jvm.java
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,24 +34,37 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: TransactionAdapter
 
+    private lateinit var logoutBtn: MaterialButton
+
+
     private val db: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
     }
 
     private var listenerRegistration: ListenerRegistration? = null
 
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(this)
         setContentView(R.layout.activity_main)
 
+        val auth = FirebaseAuth.getInstance()
+        if(auth.currentUser == null){
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         // UI
         tvBalance = findViewById(R.id.tvBalance)
         rv = findViewById(R.id.rvTransactions)
         addBtn = findViewById(R.id.btnAdd)
         downloadBtn = findViewById(R.id.btnDownloadCSV)
-
+        logoutBtn=findViewById(R.id.logoutBtn)
         // Setup RecyclerView
         adapter = TransactionAdapter(mutableListOf())
         rv.layoutManager = LinearLayoutManager(this)
@@ -68,6 +85,12 @@ class MainActivity : AppCompatActivity() {
                 saveCSVToDownloads(csv)
             }
         }
+    logoutBtn.setOnClickListener {
+        FirebaseAuth.getInstance().signOut()
+        startActivity((Intent(this, LoginActivity::class.java)))
+        finish()
+    }
+
     }
 
     override fun onDestroy() {
